@@ -1,6 +1,6 @@
-package com.example.semillerodia1.controller.models;
+package com.example.semillerodia1.infraestructure.controller.models;
 
-import com.example.semillerodia1.domain.MaintenanceService;
+import com.example.semillerodia1.core.domain.MaintenanceService;
 
 public class MaintenanceServiceDTO {
 

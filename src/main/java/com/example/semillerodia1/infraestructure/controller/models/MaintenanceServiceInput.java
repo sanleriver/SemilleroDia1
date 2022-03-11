@@ -1,4 +1,4 @@
-package com.example.semillerodia1.controller.models;
+package com.example.semillerodia1.infraestructure.controller.models;
 
 import java.time.LocalDateTime;
 

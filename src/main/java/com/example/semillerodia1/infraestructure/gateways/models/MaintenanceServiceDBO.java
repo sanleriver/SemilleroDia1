@@ -1,6 +1,6 @@
-package com.example.semillerodia1.repository;
+package com.example.semillerodia1.infraestructure.gateways.models;
 
-import com.example.semillerodia1.domain.*;
+import com.example.semillerodia1.core.domain.*;
 
 import java.time.LocalDateTime;
 

@@ -1,4 +1,4 @@
-package com.example.semillerodia1.domain;
+package com.example.semillerodia1.core.domain;
 
 import org.apache.commons.lang3.Validate;
 
