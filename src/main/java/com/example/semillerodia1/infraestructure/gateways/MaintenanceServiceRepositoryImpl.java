@@ -8,10 +8,10 @@ import com.example.semillerodia1.shared.domain.PageQuery;
 import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -37,13 +37,9 @@ public class MaintenanceServiceRepositoryImpl implements MaintenanceServiceRepos
             List<MaintenanceService> result = new ArrayList<>();
 
             while (resultSet.next()){
-                MaintenanceServiceDBO maintenanceServiceDBO = new MaintenanceServiceDBO();
-                maintenanceServiceDBO.setId(resultSet.getString("maintenance_id"));
-                maintenanceServiceDBO.setDateTimeStart(resultSet.getTimestamp("maintenance_datetimestart").toLocalDateTime());
-                maintenanceServiceDBO.setDateTimeEnd(resultSet.getTimestamp("maintenance_datetimeend").toLocalDateTime());
-                maintenanceServiceDBO.setDescription(resultSet.getString("maintenance_description"));
-                MaintenanceService domain = maintenanceServiceDBO.toDomain();
-                result.add(domain);
+                MaintenanceServiceDBO maintenanceServiceDBO = MaintenanceServiceDBO.fromResultSet(resultSet);
+                MaintenanceService maintenanace = maintenanceServiceDBO.toDomain();
+                result.add(maintenanace);
             }
 
             resultSet.close();
@@ -56,11 +52,57 @@ public class MaintenanceServiceRepositoryImpl implements MaintenanceServiceRepos
 
     @Override
     public Optional<MaintenanceService> get(MaintenanceServiceId maintenanceServiceId) {
-        return Optional.empty();
+        String sql = "SELECT * FROM maintenance_service WHERE maintenance_id = ?";
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(sql)){
+
+            preparedStatement.setString(1, maintenanceServiceId.toString());
+            ResultSet resultSet = preparedStatement.executeQuery();
+
+            if (resultSet.next()){
+                MaintenanceServiceDBO maintenanceServiceDBO = MaintenanceServiceDBO.fromResultSet(resultSet);
+                MaintenanceService maintenanace = maintenanceServiceDBO.toDomain();
+                return Optional.of(maintenanace);
+            } else {
+                return Optional.empty();
+            }
+        }catch (SQLException exception){
+            throw new RuntimeException("Error querying database", exception);
+        }
     }
 
     @Override
     public void store(MaintenanceService maintenanceService) {
+        String sql = "INSERT INTO maintenance_service (maintenance_id, maintenance_datetimestart, maintenance_datetimeend, maintenance_description) VALUES (?,?,?,?)";
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(sql)){
 
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+            preparedStatement.setString(1, maintenanceService.getId().toString());
+            preparedStatement.setTimestamp(2, Timestamp.valueOf(maintenanceService.getDateTimeStart().getDateTimeStart().format(formatter)));
+            preparedStatement.setTimestamp(3, Timestamp.valueOf(maintenanceService.getDateTimeEnd().getDateTimeEnd().format(formatter)));
+            preparedStatement.setString(4, maintenanceService.getDescription().toString());
+            preparedStatement.executeUpdate();
+
+
+        }catch (SQLException exception){
+            throw new RuntimeException("Error querying database", exception);
+        }
+    }
+
+    @Override
+    public MaintenanceServiceId delete(MaintenanceServiceId maintenanceServiceId) {
+        String sql = "DELETE FROM maintenance_service WHERE maintenance_id = ?";
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(sql)){
+
+            preparedStatement.setString(1, maintenanceServiceId.toString());
+            preparedStatement.execute();
+
+            return maintenanceServiceId;
+        }catch (SQLException exception){
+            throw new RuntimeException("Error querying database", exception);
+        }
     }
 }

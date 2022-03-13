@@ -2,6 +2,8 @@ package com.example.semillerodia1.infraestructure.gateways.models;
 
 import com.example.semillerodia1.core.domain.*;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.time.LocalDateTime;
 
 public class MaintenanceServiceDBO {
@@ -37,6 +39,15 @@ public class MaintenanceServiceDBO {
                 maintenanceService.getDateTimeEnd().getDateTimeEnd(),
                 maintenanceService.getDescription().toString()
         );
+    }
+
+    public static MaintenanceServiceDBO fromResultSet(ResultSet resultSet) throws SQLException{
+        MaintenanceServiceDBO maintenanceServiceDBO = new MaintenanceServiceDBO();
+        maintenanceServiceDBO.setId(resultSet.getString("maintenance_id"));
+        maintenanceServiceDBO.setDateTimeStart(resultSet.getTimestamp("maintenance_datetimestart").toLocalDateTime());
+        maintenanceServiceDBO.setDateTimeEnd(resultSet.getTimestamp("maintenance_datetimeend").toLocalDateTime());
+        maintenanceServiceDBO.setDescription(resultSet.getString("maintenance_description"));
+        return maintenanceServiceDBO;
     }
 
     public String getId() {

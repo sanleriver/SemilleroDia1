@@ -14,4 +14,6 @@ public interface MaintenanceServiceRepository {
     Optional<MaintenanceService> get(MaintenanceServiceId maintenanceServiceId);
 
     void store(MaintenanceService maintenanceService);
+
+    MaintenanceServiceId delete(MaintenanceServiceId id);
 }

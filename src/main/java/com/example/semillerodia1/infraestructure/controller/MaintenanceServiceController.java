@@ -1,29 +1,38 @@
 package com.example.semillerodia1.infraestructure.controller;
 
-import com.example.semillerodia1.core.gateways.MaintenanceServiceRepository;
 import com.example.semillerodia1.infraestructure.controller.models.MaintenanceServiceDTO;
 import com.example.semillerodia1.infraestructure.controller.models.MaintenanceServiceInput;
-import com.example.semillerodia1.core.domain.*;
-import com.example.semillerodia1.shared.domain.Limit;
-import com.example.semillerodia1.shared.domain.PageQuery;
-import com.example.semillerodia1.shared.domain.Skip;
+import com.example.semillerodia1.infraestructure.services.MaintenanceServiceService;
+import com.example.semillerodia1.shared.errors.ApplicationError;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
+import java.util.Map;
+import java.util.Optional;
 
 @RestController
 public class MaintenanceServiceController {
-    private final MaintenanceServiceRepository maintenanceServiceRepository;
+    private final MaintenanceServiceService service;
 
-    public MaintenanceServiceController(MaintenanceServiceRepository maintenanceServiceRepository) {
-        this.maintenanceServiceRepository = maintenanceServiceRepository;
+    public MaintenanceServiceController(MaintenanceServiceService service) {
+        this.service = service;
     }
 
     @RequestMapping(path = "/services/{id}", method = RequestMethod.GET)
-    public MaintenanceServiceDTO getProducts(@PathVariable(value = "id") String id){
-        return new MaintenanceServiceDTO();
+    public ResponseEntity<Object> getProducts(@PathVariable(value = "id") String id){
+        Optional<MaintenanceServiceDTO> maintenanceServiceDTO = service.getMaintenance(id);
+        if (maintenanceServiceDTO.isPresent()){
+            return ResponseEntity.status(HttpStatus.OK).body(maintenanceServiceDTO);
+        } else {
+            ApplicationError error = new ApplicationError(
+                    "ResourseNotFound",
+                    "Maintenance with this id not found",
+                    Map.of("id", id)
+            );
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+        }
     }
 
     @RequestMapping(path = "/services", method = RequestMethod.GET)
@@ -31,27 +40,46 @@ public class MaintenanceServiceController {
             @RequestParam(name = "skip", defaultValue = "0") Integer skip,
             @RequestParam(name = "limit", defaultValue = "50") Integer limit
     ){
-        PageQuery pageQuery = new PageQuery(
-                new Limit(limit),
-                new Skip(skip)
-        );
-        List<MaintenanceService> maintenanceServices = maintenanceServiceRepository.query(pageQuery);
-        List<MaintenanceServiceDTO> result = new ArrayList<>();
-        for (MaintenanceService maintenance: maintenanceServices) {
-            MaintenanceServiceDTO dto = MaintenanceServiceDTO.fromDomain(maintenance);
-            result.add(dto);
-        }
-        return result;
+        return service.queryMaintenance(limit, skip);
     }
 
     @RequestMapping(path = "/services", method = RequestMethod.POST)
-    public MaintenanceServiceDTO createService(@RequestBody MaintenanceServiceInput maintenanceServiceInput){
-        MaintenanceService maintenanceService = new MaintenanceService(
-                new MaintenanceServiceId(UUID.randomUUID().toString()),
-                new MaintenanceServiceDateTimeStart(maintenanceServiceInput.getDateTimeStart()),
-                new MaintenanceServiceDateTimeEnd(maintenanceServiceInput.getDateTimeEnd()),
-                new MaintenanceServiceDescription(maintenanceServiceInput.getDescription()));
+    public ResponseEntity<?> createService(@RequestBody MaintenanceServiceInput maintenanceServiceInput){
+        try {
+            return ResponseEntity.status(HttpStatus.CREATED).body(service.createMaintenanceService(maintenanceServiceInput));
+        } catch (IllegalArgumentException | NullPointerException e) {
+            ApplicationError error = new ApplicationError(
+                    "InputDataValidationError",
+                    "Bad input data",
+                    Map.of(
+                            "error", e.getMessage()
+                    )
+            );
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(error);
+        } catch (Exception e){
+            ApplicationError error = new ApplicationError(
+                    "SystemError",
+                    e.getMessage(),
+                    Map.of()
+            );
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(error);
+        }
+    }
 
-        return MaintenanceServiceDTO.fromDomain(maintenanceService);
+    @RequestMapping(path = "/services/{id}", method = RequestMethod.DELETE)
+    public ResponseEntity<?> deleteService(@PathVariable String id){
+        Optional<MaintenanceServiceDTO> maintenanceServiceDTO = service.getMaintenance(id);
+        if (maintenanceServiceDTO.isPresent()) {
+            return ResponseEntity.status(HttpStatus.OK).body(service.deleteService(id));
+        } else {
+            ApplicationError error = new ApplicationError(
+                    "ResourseNotFound",
+                    "Maintenance with this id not found",
+                    Map.of("id", id)
+            );
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+        }
     }
 }
