@@ -20,8 +20,6 @@ public class MaintenanceServiceDateTimeEnd {
 
     @Override
     public String toString() {
-        return "MaintenanceServiceDateTimeStrat{" +
-                "dateTimeStart=" + value +
-                '}';
+        return "" + value + "";
     }
 }

@@ -1,4 +1,4 @@
-package com.example.semillerodia1.infraestructure.controller.models;
+package com.example.semillerodia1.infrastructure.controller.models;
 
 import com.example.semillerodia1.core.domain.MaintenanceService;
 

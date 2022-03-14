@@ -8,6 +8,7 @@ public class MaintenanceServiceId {
 
     public MaintenanceServiceId(String value) {
         Validate.notNull(value, "Id of maintenance service can't be null");
+        Validate.notBlank(value, "Id of maintenance service can't be blank");
         Validate.isTrue(value.trim().length() == 36);
         this.value = value;
     }

@@ -1,16 +1,14 @@
-package com.example.semillerodia1.infraestructure.gateways;
+package com.example.semillerodia1.infrastructure.gateways;
 
 import com.example.semillerodia1.core.domain.MaintenanceService;
 import com.example.semillerodia1.core.domain.MaintenanceServiceId;
 import com.example.semillerodia1.core.gateways.MaintenanceServiceRepository;
-import com.example.semillerodia1.infraestructure.gateways.models.MaintenanceServiceDBO;
+import com.example.semillerodia1.infrastructure.gateways.models.MaintenanceServiceDBO;
 import com.example.semillerodia1.shared.domain.PageQuery;
 import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
 import java.sql.*;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,6 +17,7 @@ import java.util.Optional;
 @Repository
 public class MaintenanceServiceRepositoryImpl implements MaintenanceServiceRepository {
     private final DataSource dataSource;
+    private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     public MaintenanceServiceRepositoryImpl(DataSource dataSource) {
         this.dataSource = dataSource;
@@ -77,14 +76,11 @@ public class MaintenanceServiceRepositoryImpl implements MaintenanceServiceRepos
         try (Connection connection = dataSource.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(sql)){
 
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-
             preparedStatement.setString(1, maintenanceService.getId().toString());
             preparedStatement.setTimestamp(2, Timestamp.valueOf(maintenanceService.getDateTimeStart().getDateTimeStart().format(formatter)));
             preparedStatement.setTimestamp(3, Timestamp.valueOf(maintenanceService.getDateTimeEnd().getDateTimeEnd().format(formatter)));
             preparedStatement.setString(4, maintenanceService.getDescription().toString());
             preparedStatement.executeUpdate();
-
 
         }catch (SQLException exception){
             throw new RuntimeException("Error querying database", exception);
@@ -101,6 +97,23 @@ public class MaintenanceServiceRepositoryImpl implements MaintenanceServiceRepos
             preparedStatement.execute();
 
             return maintenanceServiceId;
+        }catch (SQLException exception){
+            throw new RuntimeException("Error querying database", exception);
+        }
+    }
+
+    @Override
+    public void update(MaintenanceService maintenanceService) {
+        String sql = "UPDATE maintenance_service SET maintenance_datetimestart = ?, maintenance_datetimeend = ?, maintenance_description = ? WHERE maintenance_id = ?";
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(sql)){
+
+            preparedStatement.setTimestamp(1, Timestamp.valueOf(maintenanceService.getDateTimeStart().getDateTimeStart().format(formatter)));
+            preparedStatement.setTimestamp(2, Timestamp.valueOf(maintenanceService.getDateTimeEnd().getDateTimeEnd().format(formatter)));
+            preparedStatement.setString(3, maintenanceService.getDescription().getValue());
+            preparedStatement.setString(4, maintenanceService.getId().getValue());
+            preparedStatement.executeUpdate();
+
         }catch (SQLException exception){
             throw new RuntimeException("Error querying database", exception);
         }

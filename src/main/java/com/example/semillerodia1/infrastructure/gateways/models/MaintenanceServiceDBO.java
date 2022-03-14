@@ -1,4 +1,4 @@
-package com.example.semillerodia1.infraestructure.gateways.models;
+package com.example.semillerodia1.infrastructure.gateways.models;
 
 import com.example.semillerodia1.core.domain.*;
 

@@ -1,4 +1,4 @@
-package com.example.semillerodia1.infraestructure.controller;
+package com.example.semillerodia1.infrastructure.controller;
 
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;

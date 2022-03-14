@@ -1,4 +1,4 @@
-package com.example.semillerodia1.infraestructure.configuration;
+package com.example.semillerodia1.infrastructure.configuration;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
